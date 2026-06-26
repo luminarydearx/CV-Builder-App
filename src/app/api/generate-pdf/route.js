@@ -1,6 +1,4 @@
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server.node";
-import puppeteer from "puppeteer";
 import { RESUME_WIDTH } from "@/lib/cv-templates";
 import { allTemplateMap } from "@/lib/all-templates";
 
@@ -14,19 +12,26 @@ export async function POST(request) {
     const data = body?.data;
 
     if (!data) {
-      return Response.json({ error: "Data CV tidak ditemukan" }, { status: 400 });
-    }
-
-    const TemplateComponent = allTemplateMap[data.selectedTemplate] || allTemplateMap.minimal;
-
-    if (!TemplateComponent) {
       return Response.json(
-        { error: `Template "${data.selectedTemplate}" tidak ditemukan` },
+        { error: "Data CV tidak ditemukan" },
         { status: 400 }
       );
     }
 
-    const markup = renderToStaticMarkup(createElement(TemplateComponent, { data }));
+    const TemplateComponent =
+      allTemplateMap[data.selectedTemplate] || allTemplateMap.minimal;
+    if (!TemplateComponent) {
+      return Response.json(
+        { error: "Template tidak ditemukan" },
+        { status: 400 }
+      );
+    }
+
+    // Dynamic import react-dom/server.node
+    const { renderToStaticMarkup } = await import("react-dom/server.node");
+    const markup = renderToStaticMarkup(
+      createElement(TemplateComponent, { data })
+    );
 
     const html = `<!DOCTYPE html>
 <html lang="id">
@@ -53,21 +58,43 @@ export async function POST(request) {
   <body>${markup}</body>
 </html>`;
 
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage", // Mencegah crash pada container/environment terbatas
-        "--disable-gpu",
-      ],
-    });
+    // === DUAL-MODE BROWSER LAUNCH ===
+    // Deteksi produksi (Vercel) vs development (Lokal)
+    const isProduction = process.env.NODE_ENV === "production";
+
+    if (isProduction) {
+      // PRODUKSI (Vercel): Pakai @sparticuz/chromium
+      const chromium = (await import("@sparticuz/chromium")).default;
+      const puppeteerCore = (await import("puppeteer-core")).default;
+
+      browser = await puppeteerCore.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      });
+    } else {
+      // DEVELOPMENT LOKAL (Windows Anda): Pakai puppeteer (full)
+      const puppeteer = (await import("puppeteer")).default;
+
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+        ],
+      });
+    }
 
     const page = await browser.newPage();
     await page.setViewport({ width: RESUME_WIDTH, height: 1123 });
 
-    // Tambahkan timeout explisit agar tidak hang tanpa pesan error
-    await page.setContent(html, { waitUntil: "networkidle0", timeout: 30000 });
+    await page.setContent(html, {
+      waitUntil: "networkidle0",
+      timeout: 30000
+    });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -83,25 +110,24 @@ export async function POST(request) {
       },
     });
   } catch (err) {
-    console.error("Gagal generate PDF:", err);
-    const isDev = process.env.NODE_ENV !== "production";
+    console.error("=== PDF GENERATION ERROR ===");
+    console.error("Error message:", err.message);
+    console.error("Error stack:", err.stack);
+    console.error("============================");
 
-    // Kirim detail error ke frontend (hanya saat dev) agar mudah di-debug
     return Response.json(
       {
         error: "Gagal generate PDF di server. Coba lagi.",
-        detail: isDev ? err?.message : undefined,
-        stack: isDev ? err?.stack : undefined,
+        detail: err?.message || "Unknown error",
       },
       { status: 500 }
     );
   } finally {
-    // Gunakan finally agar browser PASTI ditutup meskipun terjadi error di tengah jalan
     if (browser) {
       try {
         await browser.close();
-      } catch {
-        // ignore cleanup error
+      } catch (e) {
+        console.error("Error closing browser:", e);
       }
     }
   }
