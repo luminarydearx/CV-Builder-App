@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { usePortfolio } from "@/context/PortfolioContext";
 import { templates } from "@/lib/templates-meta";
+import { DEMO_DATA } from "@/lib/demo-data";
+import TemplateThumbnail from "@/components/preview/TemplateThumbnail";
 import { Check, ArrowRight } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -25,11 +27,11 @@ const TemplatesPage = () => {
           <div className="tag-chip inline-flex mb-6">Pilih Tampilanmu</div>
           <h1 className="section-title mb-4">Template Premium</h1>
           <p className="text-white/45 text-lg max-w-xl mx-auto">
-            Banyak desain unik — dari minimalis klasik hingga neon futuristik
+            Setiap template bisa kamu sesuaikan warnanya sendiri di Builder
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {templates.map((tmpl) => (
             <div
               key={tmpl.id}
@@ -39,8 +41,8 @@ const TemplatesPage = () => {
                   : "hover:border-white/20 hover:translate-y-[-2px]"
               }`}
             >
-              <div className="relative h-44 p-3 bg-gradient-to-b from-white/[0.02] to-transparent overflow-hidden">
-                {tmpl.preview}
+              <div className="relative bg-gradient-to-b from-white/[0.02] to-transparent">
+                <TemplateThumbnail templateId={tmpl.id} data={DEMO_DATA} />
                 {data.selectedTemplate === tmpl.id && (
                   <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gold-400 flex items-center justify-center shadow-gold z-10">
                     <Check size={11} className="text-navy-950 font-bold" />

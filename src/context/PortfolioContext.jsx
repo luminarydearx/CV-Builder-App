@@ -26,6 +26,10 @@ export const defaultData = {
   // New/dst, sesuai desain aslinya). Begitu user pilih font dari dropdown
   // di Builder, nilai ini terisi dan akan menimpa font SEMUA template.
   fontFamily: "",
+  // null = pakai warna asli template. Begitu user pilih preset atau atur
+  // warna manual di Builder, object ini terisi {accent, accent2, bg,
+  // surface, text, muted} dan menimpa warna SEMUA template.
+  customColors: null,
   // Section custom yang ditambahkan user sendiri (mis. "Sertifikasi",
   // "Bahasa", "Volunteer"). Setiap section: { id, title, icon, items: [...] }
   // items: { id, heading, subheading, period, description }

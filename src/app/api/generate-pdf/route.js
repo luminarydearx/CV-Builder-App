@@ -1,9 +1,31 @@
 import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server.node";
+import puppeteer from "puppeteer";
 import { RESUME_WIDTH } from "@/lib/cv-templates";
 import { allTemplateMap } from "@/lib/all-templates";
 
-export const runtime = "nodejs";
-export const maxDuration = 60;
+/*
+ * KENAPA BUG "PREVIEW TIDAK SINKRON DENGAN PDF" TERJADI DI VERSI LAMA:
+ *
+ * Versi React/Vite lama memakai html2canvas untuk "memotret" elemen DOM
+ * preview jadi gambar, lalu menempelkan gambar itu ke PDF lewat jsPDF.
+ * Masalahnya, html2canvas TIDAK memakai mesin rendering browser yang
+ * sesungguhnya -- ia menulis ulang (reimplement) sebagian algoritma CSS
+ * (terutama flexbox centering, line-height, dan font metrics) dengan caranya
+ * sendiri di JavaScript. Hasilnya sering sedikit meleset dari yang
+ * sebenarnya dirender browser, terutama pada elemen seperti badge biru
+ * `<span style={{background:"#2b6cb0", padding:"2px 8px"}}>{exp.period}</span>`
+ * di dalam flex row `justifyContent:"space-between"` -- inilah persis "kotak
+ * biru dengan teks bergeser" yang dilaporkan.
+ *
+ * PERBAIKANNYA: route ini me-render komponen template CV yang SAMA PERSIS
+ * (dari src/lib/cv-templates.jsx, modul yang sama yang dipakai LivePreview
+ * di client) menjadi HTML statis lewat ReactDOMServer, lalu membuka HTML itu
+ * di Chromium sungguhan (lewat Puppeteer) dan mencetaknya ke PDF lewat
+ * page.pdf(). Karena PREVIEW dan PDF kini dirender oleh mesin browser yang
+ * sama dengan komponen yang sama, hasilnya dijamin identik -- tidak ada lagi
+ * reimplementasi CSS yang bisa meleset.
+ */
 
 export async function POST(request) {
   let browser;
@@ -12,26 +34,11 @@ export async function POST(request) {
     const data = body?.data;
 
     if (!data) {
-      return Response.json(
-        { error: "Data CV tidak ditemukan" },
-        { status: 400 }
-      );
+      return Response.json({ error: "Data CV tidak ditemukan" }, { status: 400 });
     }
 
-    const TemplateComponent =
-      allTemplateMap[data.selectedTemplate] || allTemplateMap.minimal;
-    if (!TemplateComponent) {
-      return Response.json(
-        { error: "Template tidak ditemukan" },
-        { status: 400 }
-      );
-    }
-
-    // Dynamic import react-dom/server.node
-    const { renderToStaticMarkup } = await import("react-dom/server.node");
-    const markup = renderToStaticMarkup(
-      createElement(TemplateComponent, { data })
-    );
+    const TemplateComponent = allTemplateMap[data.selectedTemplate] || allTemplateMap.minimal;
+    const markup = renderToStaticMarkup(createElement(TemplateComponent, { data }));
 
     const html = `<!DOCTYPE html>
 <html lang="id">
@@ -58,49 +65,26 @@ export async function POST(request) {
   <body>${markup}</body>
 </html>`;
 
-    // === DUAL-MODE BROWSER LAUNCH ===
-    // Deteksi produksi (Vercel) vs development (Lokal)
-    const isProduction = process.env.NODE_ENV === "production";
-
-    if (isProduction) {
-      // PRODUKSI (Vercel): Pakai @sparticuz/chromium
-      const chromium = (await import("@sparticuz/chromium")).default;
-      const puppeteerCore = (await import("puppeteer-core")).default;
-
-      browser = await puppeteerCore.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
-      });
-    } else {
-      // DEVELOPMENT LOKAL (Windows Anda): Pakai puppeteer (full)
-      const puppeteer = (await import("puppeteer")).default;
-
-      browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-        ],
-      });
-    }
+    browser = await puppeteer.launch({
+      headless: true,
+      // --no-sandbox diperlukan di beberapa environment (WSL, Docker, CI)
+      // yang tidak menyediakan sandbox namespace yang Chromium butuhkan.
+      // Aman untuk dipakai di sini karena hanya merender HTML yang kita
+      // buat sendiri dari data lokal, bukan halaman web sembarangan.
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
 
     const page = await browser.newPage();
     await page.setViewport({ width: RESUME_WIDTH, height: 1123 });
-
-    await page.setContent(html, {
-      waitUntil: "networkidle0",
-      timeout: 30000
-    });
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
       margin: { top: 0, right: 0, bottom: 0, left: 0 },
     });
+
+    await browser.close();
 
     return new Response(pdfBuffer, {
       status: 200,
@@ -110,25 +94,17 @@ export async function POST(request) {
       },
     });
   } catch (err) {
-    console.error("=== PDF GENERATION ERROR ===");
-    console.error("Error message:", err.message);
-    console.error("Error stack:", err.stack);
-    console.error("============================");
-
-    return Response.json(
-      {
-        error: "Gagal generate PDF di server. Coba lagi.",
-        detail: err?.message || "Unknown error",
-      },
-      { status: 500 }
-    );
-  } finally {
     if (browser) {
       try {
         await browser.close();
-      } catch (e) {
-        console.error("Error closing browser:", e);
+      } catch {
+        // ignore cleanup error
       }
     }
+    console.error("Gagal generate PDF:", err);
+    return Response.json(
+      { error: "Gagal generate PDF di server. Coba lagi." },
+      { status: 500 }
+    );
   }
 }

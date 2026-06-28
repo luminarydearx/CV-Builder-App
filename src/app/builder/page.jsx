@@ -19,6 +19,8 @@ import {
   Type,
   Folder,
   Crop,
+  Palette,
+  RotateCcw,
 } from "lucide-react";
 import LivePreview from "@/components/preview/LivePreview";
 import DraftManager from "@/components/ui/DraftManager";
@@ -26,6 +28,7 @@ import PhotoCropModal from "@/components/ui/PhotoCropModal";
 import { templates } from "@/lib/templates-meta";
 import { FONT_OPTIONS } from "@/lib/font-options";
 import { SECTION_ICON_MAP, SECTION_ICON_NAMES } from "@/lib/section-icons";
+import { COLOR_PRESETS, COLOR_SLOT_LABELS } from "@/lib/theme-colors";
 
 const SectionHeader = ({ icon: Icon, title, isOpen, onToggle }) => (
   <button
@@ -179,6 +182,7 @@ const BuilderPage = () => {
   const [newSkill, setNewSkill] = useState("");
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [showPreviewMobile, setShowPreviewMobile] = useState(false);
+  const [showColorPanel, setShowColorPanel] = useState(false);
 
   const toggleSection = (key) =>
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -259,6 +263,68 @@ const BuilderPage = () => {
                   </option>
                 ))}
               </select>
+              <button
+                onClick={() => setShowColorPanel(!showColorPanel)}
+                className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${
+                  showColorPanel
+                    ? "border-gold-400/40 text-gold-400 bg-gold-400/10"
+                    : "border-white/10 text-white/60 hover:border-gold-400/30"
+                }`}
+              >
+                <Palette size={13} />
+                Warna
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showColorPanel && (
+          <div className="glass rounded-xl p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="label-field mb-0">Preset Warna</span>
+              {data.customColors && (
+                <button
+                  onClick={() => updateField("customColors", null)}
+                  className="text-[11px] text-white/30 hover:text-gold-400 transition-colors flex items-center gap-1"
+                >
+                  <RotateCcw size={11} />
+                  Reset ke warna asli template
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {COLOR_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => updateField("customColors", preset.colors)}
+                  title={preset.label}
+                  className="w-8 h-8 rounded-full border-2 border-white/10 hover:border-gold-400/50 transition-colors overflow-hidden flex-shrink-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${preset.colors.accent} 50%, ${preset.colors.accent2} 50%)`,
+                  }}
+                />
+              ))}
+            </div>
+            <p className="text-[10px] text-white/25 mb-3">
+              Atau atur manual tiap warna (berlaku untuk semua template):
+            </p>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+              {Object.entries(COLOR_SLOT_LABELS).map(([key, label]) => (
+                <div key={key}>
+                  <label className="text-[9px] text-white/35 block mb-1 truncate">{label}</label>
+                  <input
+                    type="color"
+                    value={(data.customColors && data.customColors[key]) || "#8a8a8a"}
+                    onChange={(e) =>
+                      updateField("customColors", {
+                        ...(data.customColors || {}),
+                        [key]: e.target.value,
+                      })
+                    }
+                    className="w-full h-8 rounded-lg cursor-pointer bg-transparent border border-white/10"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         )}

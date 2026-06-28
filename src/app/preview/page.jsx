@@ -25,14 +25,11 @@ const PreviewPage = () => {
         .trim()
         .replace(/\s+/g, " ")}.pdf`;
 
-      /*
-        Server menerima data CV yang sama persis dengan yang dipakai
-        LivePreview, lalu me-render TEMPLATE COMPONENT YANG SAMA via Puppeteer
-        (real Chromium) -- bukan lagi snapshot html2canvas yang sering meleset
-        dari tampilan asli. Inilah perbaikan inti: Preview dan PDF sekarang
-        benar-benar menggunakan mesin render yang sama untuk mengurangi
-        ketidak sinkronisasi antara LivePreview dengan PDF Generator
-      .*/
+      // Server menerima data CV yang sama persis dengan yang dipakai
+      // LivePreview, lalu me-render TEMPLATE COMPONENT YANG SAMA via Puppeteer
+      // (real Chromium) -- bukan lagi snapshot html2canvas yang sering meleset
+      // dari tampilan asli. Inilah perbaikan inti: preview dan PDF sekarang
+      // benar-benar memakai mesin render yang sama.
       const res = await fetch("/api/generate-pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
