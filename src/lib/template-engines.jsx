@@ -24,6 +24,7 @@ import {
   SectionTitle,
   ContactRow,
   CustomSectionsBlock,
+  RESUME_MIN_HEIGHT,
 } from "@/lib/cv-templates";
 
 export const IconRow = ({ data, color, iconColor, fontSize = 10.5, gap = 6 }) => {
@@ -49,7 +50,7 @@ export const IconRow = ({ data, color, iconColor, fontSize = 10.5, gap = 6 }) =>
 
 /* ════════════════════════ 1. Border Header (Minimal) ════════════════════════ */
 export const BorderHeaderTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Georgia,serif", background: theme.bg, color: theme.text, padding: "40px 44px", height: "100%" }}>
+  <div style={{ fontFamily: data.fontFamily || "Georgia,serif", background: theme.bg, color: theme.text, padding: "40px 44px", minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ borderBottom: `2px solid ${theme.text}`, paddingBottom: 16, marginBottom: 20 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 4px", letterSpacing: "-0.5px" }}>{data.name || "Nama Lengkap"}</h1>
       <p style={{ fontSize: 14, color: theme.muted, margin: "0 0 10px", fontStyle: "italic" }}>{data.title || "Jabatan / Role"}</p>
@@ -67,7 +68,7 @@ export const MINIMAL_THEME = { accent: "#475569", accent2: "#475569", bg: "#ffff
 
 /* ════════════════════════ 2. Gradient Banner (Modern) ════════════════════════ */
 export const GradientBannerTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", background: theme.bg, color: theme.text, height: "100%" }}>
+  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", background: theme.bg, color: theme.text, minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ background: `linear-gradient(135deg,${theme.accent2},${theme.accent})`, padding: "32px 40px 28px" }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, margin: "0 0 4px", color: theme.onAccent, letterSpacing: "-0.5px" }}>{data.name || "Nama Lengkap"}</h1>
       <p style={{ fontSize: 14, color: `${theme.onAccent}cc`, margin: "0 0 14px", fontWeight: 500 }}>{data.title || "Jabatan / Role"}</p>
@@ -87,7 +88,7 @@ export const MODERN_THEME = { accent: "#60a5fa", accent2: "#1e3a8a", bg: "#0f172
 
 /* ════════════════════════ 3. Sidebar (Professional) ════════════════════════ */
 export const SidebarTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", display: "flex", color: theme.text, minHeight: 1123 }}>
+  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", display: "flex", color: theme.text, minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ width: 200, flexShrink: 0, background: `linear-gradient(180deg,${theme.accent2},${theme.accent})`, color: theme.onAccent, padding: "32px 20px", display: "flex", flexDirection: "column", gap: 20 }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
@@ -173,7 +174,7 @@ export const PROFESSIONAL_THEME = { accent: "#2b6cb0", accent2: "#1a365d", bg: "
 
 /* ════════════════════════ 4. Centered Photo (Creative) ════════════════════════ */
 export const CenteredPhotoTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Verdana,sans-serif", background: theme.bg, color: theme.text, padding: "36px 36px" }}>
+  <div style={{ fontFamily: data.fontFamily || "Verdana,sans-serif", background: theme.bg, color: theme.text, padding: "36px 36px", minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ textAlign: "center", marginBottom: 28 }}>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
         <PhotoOrInitial photo={data.photo} name={data.name} size={88} bgFrom={theme.accent} bgTo={theme.accent2} border="3px solid white" shadow="0 4px 20px rgba(0,0,0,0.15)" />
@@ -196,7 +197,7 @@ export const CREATIVE_THEME = { accent: "#ec4899", accent2: "#a855f7", bg: "#fdf
 export const DarkSerifTemplate = ({ data, theme }) => {
   const GoldBar = () => <div style={{ width: 3, height: 14, background: theme.accent, borderRadius: 2 }} />;
   return (
-    <div style={{ fontFamily: data.fontFamily || "Garamond,serif", background: theme.bg, color: theme.text, padding: "44px 48px" }}>
+    <div style={{ fontFamily: data.fontFamily || "Garamond,serif", background: theme.bg, color: theme.text, padding: "44px 48px", minHeight: RESUME_MIN_HEIGHT }}>
       <div style={{ borderBottom: `1px solid ${theme.accent}40`, paddingBottom: 20, marginBottom: 24 }}>
         <h1 style={{ fontSize: 30, fontWeight: 700, margin: "0 0 6px", color: theme.accent }}>{data.name || "Nama Lengkap"}</h1>
         <p style={{ fontSize: 13, color: theme.accent, margin: "0 0 12px", letterSpacing: 2, textTransform: "uppercase", fontStyle: "italic" }}>{data.title || "Jabatan / Role"}</p>
@@ -216,7 +217,7 @@ export const ELEGANT_THEME = { accent: "#d4af37", accent2: "#f0c040", bg: "#1a1a
 
 /* ════════════════════════ 6. Boxed Photo (Neon) ════════════════════════ */
 export const BoxedPhotoTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "'Courier New',monospace", background: theme.bg, color: theme.accent, padding: "32px 36px" }}>
+  <div style={{ fontFamily: data.fontFamily || "'Courier New',monospace", background: theme.bg, color: theme.accent, padding: "32px 36px", minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ border: `1px solid ${theme.accent}4d`, borderRadius: 8, padding: "20px 24px", marginBottom: 24, background: `${theme.accent}0a` }}>
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
         <PhotoOrInitial photo={data.photo} name={data.name} size={76} bgFrom={theme.accent} bgTo={theme.accent2} border={`2px solid ${theme.accent}`} />
@@ -239,7 +240,7 @@ export const NEON_THEME = { accent: "#00ff88", accent2: "#00d4ff", bg: "#000000"
 
 /* ════════════════════════ 7. Decorative Banner (Sunset) ════════════════════════ */
 export const DecorativeBannerTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Verdana,sans-serif", background: theme.bg, color: theme.text }}>
+  <div style={{ fontFamily: data.fontFamily || "Verdana,sans-serif", background: theme.bg, color: theme.text, minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ background: `linear-gradient(135deg,${theme.accent} 0%,${theme.accent2} 100%)`, padding: "36px 40px 32px", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -30, right: -30, width: 140, height: 140, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
       <div style={{ position: "absolute", bottom: -20, left: 60, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
@@ -266,7 +267,7 @@ export const SUNSET_THEME = { accent: "#ea580c", accent2: "#9333ea", bg: "#fff7e
 
 /* ════════════════════════ 8. Solid Banner + Cards (Forest) ════════════════════════ */
 export const SolidBannerCardsTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Georgia,serif", background: theme.bg, color: theme.text }}>
+  <div style={{ fontFamily: data.fontFamily || "Georgia,serif", background: theme.bg, color: theme.text, minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ background: `linear-gradient(135deg,${theme.accent2},${theme.accent})`, padding: "32px 40px" }}>
       <h1 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 4px", color: theme.onAccent }}>{data.name || "Nama Lengkap"}</h1>
       <p style={{ fontSize: 13, color: `${theme.onAccent}cc`, margin: "0 0 12px", fontStyle: "italic" }}>{data.title || "Jabatan / Role"}</p>
@@ -286,7 +287,7 @@ export const FOREST_THEME = { accent: "#22c55e", accent2: "#166534", bg: "#f0fdf
 
 /* ════════════════════════ 9. Compact Header (Aurora) ════════════════════════ */
 export const CompactHeaderTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", background: `linear-gradient(135deg,${theme.bg},${theme.accent2})`, color: theme.text, height: "100%" }}>
+  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", background: `linear-gradient(135deg,${theme.bg},${theme.accent2})`, color: theme.text, minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ padding: "32px 40px", background: "linear-gradient(to bottom, rgba(255,255,255,0.08), transparent)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
         <PhotoOrInitial photo={data.photo} name={data.name} size={64} bgFrom={theme.accent} bgTo={theme.accent2} border="2px solid rgba(255,255,255,0.2)" shadow="0 4px 12px rgba(0,0,0,0.3)" />
@@ -311,7 +312,7 @@ export const AURORA_THEME = { accent: "#a78bfa", accent2: "#1e3a8a", bg: "#4c1d9
 
 /* ════════════════════════ 10. Magazine (Retro) ════════════════════════ */
 export const MagazineTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "'Courier New',monospace", background: theme.bg, color: theme.text, padding: "36px 44px" }}>
+  <div style={{ fontFamily: data.fontFamily || "'Courier New',monospace", background: theme.bg, color: theme.text, padding: "36px 44px", minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ textAlign: "center", borderBottom: `4px double ${theme.accent}`, borderTop: `4px double ${theme.accent}`, padding: "12px 0", marginBottom: 20 }}>
       <div style={{ fontSize: 9, letterSpacing: 4, color: theme.accent, marginBottom: 4, textTransform: "uppercase" }}>— Curriculum Vitae —</div>
       <h1 style={{ fontSize: 30, fontWeight: 900, margin: "0 0 4px", letterSpacing: "1px", color: theme.text, textTransform: "uppercase" }}>{data.name || "NAMA LENGKAP"}</h1>
@@ -340,7 +341,7 @@ export const RETRO_THEME = { accent: "#92400e", accent2: "#d97706", bg: "#fef9c3
  * Terinspirasi referensi: foto bundar di sidebar gelap, baris kontak/
  * pendidikan dengan icon kecil, label section bertitik dua warna.        */
 export const IconSidebarTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Georgia,serif", display: "flex", color: theme.text, minHeight: 1123, background: theme.bg }}>
+  <div style={{ fontFamily: data.fontFamily || "Georgia,serif", display: "flex", color: theme.text, minHeight: RESUME_MIN_HEIGHT, background: theme.bg }}>
     <div style={{ width: 230, flexShrink: 0, background: theme.accent2, color: theme.onAccent, padding: "36px 26px" }}>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
         <PhotoOrInitial photo={data.photo} name={data.name} size={96} bgFrom={theme.accent} bgTo={theme.accent2} border={`4px solid ${theme.accent}`} />
@@ -443,7 +444,7 @@ export const ICON_SIDEBAR_THEME = { accent: "#d4af37", accent2: "#1e3a5f", bg: "
  * Terinspirasi referensi: foto besar jadi banner gelap penuh di atas,
  * nama & jabatan overlay di foto, konten bersih di bawah.                */
 export const PhotoBannerTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", background: theme.bg, color: theme.text }}>
+  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", background: theme.bg, color: theme.text, minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ position: "relative", background: `linear-gradient(135deg,${theme.accent2},#0a0a0a)`, padding: "40px 40px 36px", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 80% 20%, ${theme.accent}26, transparent 60%)` }} />
       <div style={{ display: "flex", alignItems: "center", gap: 24, position: "relative" }}>
@@ -500,7 +501,7 @@ export const PHOTO_BANNER_THEME = { accent: "#d4af37", accent2: "#1f2937", bg: "
  * Terinspirasi referensi: foto kecil + nama, sangat bersih, tanpa kotak/
  * warna mencolok, garis pembatas tipis -- ramah ATS.                    */
 export const CleanATSTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Georgia,serif", background: theme.bg, color: theme.text, padding: "44px 50px" }}>
+  <div style={{ fontFamily: data.fontFamily || "Georgia,serif", background: theme.bg, color: theme.text, padding: "44px 50px", minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 24, paddingBottom: 20, borderBottom: `1px solid ${theme.text}1a` }}>
       <PhotoOrInitial photo={data.photo} name={data.name} size={64} bgFrom={theme.accent} bgTo={theme.accent2} radius="8px" />
       <div>
@@ -524,7 +525,7 @@ export const CLEAN_ATS_THEME = { accent: "#475569", accent2: "#94a3b8", bg: "#ff
  * Terinspirasi referensi: foto besar di tengah/kiri atas, nama besar &
  * tebal, sans-serif modern, aksen warna minimal.                        */
 export const BoldPhotoTopTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", background: theme.bg, color: theme.text, padding: "40px 44px" }}>
+  <div style={{ fontFamily: data.fontFamily || "Arial,sans-serif", background: theme.bg, color: theme.text, padding: "40px 44px", minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 }}>
       <div style={{ maxWidth: "65%" }}>
         <h1 style={{ fontSize: 34, fontWeight: 900, margin: "0 0 4px", letterSpacing: "-1px", lineHeight: 1.05 }}>{data.name || "Nama Lengkap"}</h1>
@@ -572,7 +573,7 @@ export const BOLD_PHOTO_TOP_THEME = { accent: "#dc2626", accent2: "#1e293b", bg:
  * Terinspirasi referensi: header band pastel/colorful, dua kolom rapi
  * di bawahnya.                                                          */
 export const PastelBandTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Verdana,sans-serif", background: theme.bg, color: theme.text }}>
+  <div style={{ fontFamily: data.fontFamily || "Verdana,sans-serif", background: theme.bg, color: theme.text, minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ background: `linear-gradient(120deg,${theme.accent}33,${theme.accent2}33)`, padding: "30px 40px", display: "flex", alignItems: "center", gap: 18, borderBottom: `3px solid ${theme.accent}` }}>
       <PhotoOrInitial photo={data.photo} name={data.name} size={72} bgFrom={theme.accent} bgTo={theme.accent2} border="3px solid white" shadow="0 2px 10px rgba(0,0,0,0.1)" />
       <div>
@@ -621,7 +622,7 @@ export const PASTEL_BAND_THEME = { accent: "#f472b6", accent2: "#60a5fa", bg: "#
  * Terinspirasi referensi: tanpa kotak/warna sama sekali, hanya garis
  * tipis sebagai pembatas, tipografi serif elegan dengan whitespace luas. */
 export const LineDividerTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "'Times New Roman',serif", background: theme.bg, color: theme.text, padding: "52px 58px" }}>
+  <div style={{ fontFamily: data.fontFamily || "'Times New Roman',serif", background: theme.bg, color: theme.text, padding: "52px 58px", minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ textAlign: "center", marginBottom: 30 }}>
       <h1 style={{ fontSize: 32, fontWeight: 400, margin: "0 0 6px", letterSpacing: "2px", textTransform: "uppercase" }}>{data.name || "Nama Lengkap"}</h1>
       <div style={{ width: 60, height: 1, background: theme.accent, margin: "0 auto 10px" }} />
@@ -709,7 +710,7 @@ export const LINE_DIVIDER_THEME = { accent: "#78716c", accent2: "#a8a29e", bg: "
  * Layout 2-kolom padat untuk profesional senior dengan banyak riwayat
  * kerja -- ringkas, profesional, tetap mudah dibaca.                    */
 export const CompactExecutiveTemplate = ({ data, theme }) => (
-  <div style={{ fontFamily: data.fontFamily || "Cambria,serif", background: theme.bg, color: theme.text, padding: "34px 38px" }}>
+  <div style={{ fontFamily: data.fontFamily || "Cambria,serif", background: theme.bg, color: theme.text, padding: "34px 38px", minHeight: RESUME_MIN_HEIGHT }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 14, marginBottom: 16, borderBottom: `2px solid ${theme.accent}` }}>
       <div>
         <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 2px" }}>{data.name || "Nama Lengkap"}</h1>

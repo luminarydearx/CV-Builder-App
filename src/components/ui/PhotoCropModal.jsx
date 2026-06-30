@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, RotateCw, ZoomIn, Check, Move } from "lucide-react";
+import { X, RotateCw, ZoomIn, Check, Move, Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const VIEWPORT_SIZE = 280; // px, kotak crop yang dilihat user
 const OUTPUT_SIZE = 480; // px, resolusi akhir foto yang disimpan
@@ -24,11 +25,23 @@ export default function PhotoCropModal({ imageSrc, onApply, onClose }) {
   const imgRef = useRef(null);
 
   useEffect(() => {
-    // reset setiap kali foto baru dibuka
     setZoom(1);
     setRotation(0);
     setOffset({ x: 0, y: 0 });
     setNaturalSize(null);
+
+    // PENTING: kalau gambar ini SUDAH pernah ditampilkan browser sebelumnya
+    // (misalnya saat klik ikon gunting untuk edit ulang foto yang sudah ada
+    // -- foto itu sudah dirender di avatar kecil sebelum modal ini dibuka),
+    // browser bisa saja sudah selesai resolve gambar tersebut SEBELUM React
+    // memasang listener onLoad di bawah. Akibatnya onLoad tidak pernah
+    // terpanggil dan naturalSize macet di null selamanya -- inilah yang
+    // membuat tombol Terapkan terlihat "tidak ngapa-ngapain" saat diklik.
+    // Cek img.complete langsung sebagai fallback untuk kasus ini.
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
+    }
   }, [imageSrc]);
 
   const baseSize = (() => {
@@ -58,32 +71,45 @@ export default function PhotoCropModal({ imageSrc, onApply, onClose }) {
     dragRef.current = null;
   };
 
+  const handleImageLoad = (e) => {
+    setNaturalSize({ w: e.target.naturalWidth, h: e.target.naturalHeight });
+  };
+
   const handleApply = () => {
-    const img = imgRef.current;
-    if (!img || !naturalSize) return;
+    try {
+      const img = imgRef.current;
+      if (!img || !naturalSize) {
+        toast.error("Foto belum siap, coba sebentar lagi.");
+        return;
+      }
 
-    const canvas = document.createElement("canvas");
-    canvas.width = OUTPUT_SIZE;
-    canvas.height = OUTPUT_SIZE;
-    const ctx = canvas.getContext("2d");
+      const canvas = document.createElement("canvas");
+      canvas.width = OUTPUT_SIZE;
+      canvas.height = OUTPUT_SIZE;
+      const ctx = canvas.getContext("2d");
 
-    const scaleFactor = OUTPUT_SIZE / VIEWPORT_SIZE;
-    const drawW = baseSize.w * zoom * scaleFactor;
-    const drawH = baseSize.h * zoom * scaleFactor;
+      const scaleFactor = OUTPUT_SIZE / VIEWPORT_SIZE;
+      const drawW = baseSize.w * zoom * scaleFactor;
+      const drawH = baseSize.h * zoom * scaleFactor;
 
-    ctx.save();
-    ctx.translate(OUTPUT_SIZE / 2, OUTPUT_SIZE / 2);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.drawImage(
-      img,
-      -drawW / 2 + offset.x * scaleFactor,
-      -drawH / 2 + offset.y * scaleFactor,
-      drawW,
-      drawH
-    );
-    ctx.restore();
+      ctx.save();
+      ctx.translate(OUTPUT_SIZE / 2, OUTPUT_SIZE / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.drawImage(
+        img,
+        -drawW / 2 + offset.x * scaleFactor,
+        -drawH / 2 + offset.y * scaleFactor,
+        drawW,
+        drawH
+      );
+      ctx.restore();
 
-    onApply(canvas.toDataURL("image/jpeg", 0.9));
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+      onApply(dataUrl);
+    } catch (err) {
+      console.error("Gagal menerapkan crop foto:", err);
+      toast.error("Gagal menerapkan foto. Coba upload ulang.");
+    }
   };
 
   return (
@@ -97,7 +123,7 @@ export default function PhotoCropModal({ imageSrc, onApply, onClose }) {
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-lg text-white/90">Atur Foto</h3>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+          <button type="button" onClick={onClose} className="text-white/40 hover:text-white transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -115,9 +141,7 @@ export default function PhotoCropModal({ imageSrc, onApply, onClose }) {
             src={imageSrc}
             alt="Crop preview"
             draggable={false}
-            onLoad={(e) =>
-              setNaturalSize({ w: e.target.naturalWidth, h: e.target.naturalHeight })
-            }
+            onLoad={handleImageLoad}
             style={{
               position: "absolute",
               left: "50%",
@@ -170,15 +194,26 @@ export default function PhotoCropModal({ imageSrc, onApply, onClose }) {
         </p>
 
         <div className="flex gap-3 mt-5">
-          <button onClick={onClose} className="btn-ghost flex-1 text-sm">
+          <button type="button" onClick={onClose} className="btn-ghost flex-1 text-sm">
             Batal
           </button>
           <button
+            type="button"
             onClick={handleApply}
-            className="btn-primary flex-1 text-sm flex items-center justify-center gap-2"
+            disabled={!naturalSize}
+            className="btn-primary flex-1 text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Check size={14} />
-            Terapkan
+            {naturalSize ? (
+              <>
+                <Check size={14} />
+                Terapkan
+              </>
+            ) : (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                Memuat...
+              </>
+            )}
           </button>
         </div>
       </div>
