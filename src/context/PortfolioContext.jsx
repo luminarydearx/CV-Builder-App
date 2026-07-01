@@ -34,6 +34,19 @@ export const defaultData = {
   // "Bahasa", "Volunteer"). Setiap section: { id, title, icon, items: [...] }
   // items: { id, heading, subheading, period, description }
   customSections: [],
+  // Override posisi/warna untuk elemen BAWAAN template (foto, nama,
+  // jabatan, bio, dst), di-scope PER TEMPLATE supaya nudge posisi di satu
+  // template tidak "nyasar" ke template lain yang layout-nya beda.
+  // Struktur: { [templateId]: { [elementId]: { dx, dy, color } } }
+  elementOverrides: {},
+  // Elemen BEBAS yang ditambahkan user sendiri lewat editor visual (teks
+  // atau gambar baru, posisi & ukuran bebas). Ini SATU layer yang sama
+  // dipakai di SEMUA template (lihat FreeElementsLayer di cv-templates.jsx),
+  // jadi otomatis tersedia di template manapun tanpa perlu instrumentasi
+  // khusus per template.
+  // Item: { id, type: "text"|"image", x, y, width, height, rotation,
+  //         content (untuk text), src (untuk image), color, fontSize }
+  freeElements: [],
 };
 
 const PortfolioContext = createContext(null);
@@ -287,6 +300,66 @@ export const PortfolioProvider = ({ children }) => {
     }));
   }, []);
 
+  // ── Editor visual: override elemen bawaan template (additif) ──
+  const setElementOverride = useCallback((templateId, elementId, patch) => {
+    setData((prev) => {
+      const forTemplate = prev.elementOverrides[templateId] || {};
+      const existing = forTemplate[elementId] || {};
+      return {
+        ...prev,
+        elementOverrides: {
+          ...prev.elementOverrides,
+          [templateId]: {
+            ...forTemplate,
+            [elementId]: { ...existing, ...patch },
+          },
+        },
+      };
+    });
+  }, []);
+
+  const resetElementOverride = useCallback((templateId, elementId) => {
+    setData((prev) => {
+      const forTemplate = { ...(prev.elementOverrides[templateId] || {}) };
+      delete forTemplate[elementId];
+      return {
+        ...prev,
+        elementOverrides: { ...prev.elementOverrides, [templateId]: forTemplate },
+      };
+    });
+  }, []);
+
+  const resetAllElementOverrides = useCallback((templateId) => {
+    setData((prev) => ({
+      ...prev,
+      elementOverrides: { ...prev.elementOverrides, [templateId]: {} },
+    }));
+  }, []);
+
+  // ── Editor visual: elemen bebas (teks/gambar baru) (additif) ──
+  const addFreeElement = useCallback((element) => {
+    const id = Date.now().toString();
+    setData((prev) => ({
+      ...prev,
+      freeElements: [...prev.freeElements, { id, ...element }],
+    }));
+    return id;
+  }, []);
+
+  const updateFreeElement = useCallback((id, patch) => {
+    setData((prev) => ({
+      ...prev,
+      freeElements: prev.freeElements.map((el) => (el.id === id ? { ...el, ...patch } : el)),
+    }));
+  }, []);
+
+  const removeFreeElement = useCallback((id) => {
+    setData((prev) => ({
+      ...prev,
+      freeElements: prev.freeElements.filter((el) => el.id !== id),
+    }));
+  }, []);
+
   return (
     <PortfolioContext.Provider
       value={{
@@ -310,6 +383,12 @@ export const PortfolioProvider = ({ children }) => {
         addCustomSectionItem,
         updateCustomSectionItem,
         removeCustomSectionItem,
+        setElementOverride,
+        resetElementOverride,
+        resetAllElementOverrides,
+        addFreeElement,
+        updateFreeElement,
+        removeFreeElement,
       }}
     >
       {children}

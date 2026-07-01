@@ -21,10 +21,12 @@ import {
   Crop,
   Palette,
   RotateCcw,
+  PencilRuler,
 } from "lucide-react";
 import LivePreview from "@/components/preview/LivePreview";
 import DraftManager from "@/components/ui/DraftManager";
 import PhotoCropModal from "@/components/ui/PhotoCropModal";
+import ElementEditModal from "@/components/ui/ElementEditModal";
 import { templates } from "@/lib/templates-meta";
 import { FONT_OPTIONS } from "@/lib/font-options";
 import { SECTION_ICON_MAP, SECTION_ICON_NAMES } from "@/lib/section-icons";
@@ -183,6 +185,7 @@ const BuilderPage = () => {
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [showPreviewMobile, setShowPreviewMobile] = useState(false);
   const [showColorPanel, setShowColorPanel] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const toggleSection = (key) =>
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -273,6 +276,13 @@ const BuilderPage = () => {
               >
                 <Palette size={13} />
                 Warna
+              </button>
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-white/10 text-white/60 hover:border-gold-400/30 transition-colors"
+              >
+                <PencilRuler size={13} />
+                Edit
               </button>
             </div>
           </div>
@@ -874,6 +884,15 @@ const BuilderPage = () => {
 
           <div
             className={`${showPreviewMobile ? "block" : "hidden lg:block"} h-full`}
+            // `inert` mencegah interaksi (klik, fokus, dan yang penting di
+            // sini: query selector berbasis DOM traversal manual dari luar)
+            // dengan preview di belakang saat modal editor fullscreen
+            // terbuka -- karena kanvas di dalam modal merender template
+            // yang sama, elemen `data-edit-id` yang sama juga muncul DUA
+            // kali di DOM (di sini dan di dalam modal). `inert` bukan untuk
+            // mengubah tampilan, murni jaring pengaman supaya interaksi
+            // pointer selalu jatuh ke instance yang benar (di dalam modal).
+            inert={showEditModal ? "" : undefined}
           >
             <div className="glass rounded-2xl h-full overflow-hidden border border-white/[0.06]">
               <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
@@ -891,6 +910,8 @@ const BuilderPage = () => {
           </div>
         </div>
       </div>
+
+      {showEditModal && <ElementEditModal onClose={() => setShowEditModal(false)} />}
     </div>
   );
 };
